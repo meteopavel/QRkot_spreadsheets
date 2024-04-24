@@ -91,3 +91,38 @@ class CRUDBase(Generic[CreateSchemaType, ModelType, UpdateSchemaType]):
             .order_by(asc('create_date'))
         )
         return db_objs.scalars().all()
+
+    async def get_closed_projects(
+        self, session: AsyncSession
+    ) -> Union[List[ModelType], ModelType]:
+        """
+        Получить благотворительные проекты, для которых задан параметр
+        close_date
+        """
+        db_objs = await session.execute(
+            select(self.model)
+            .where(self.model.close_date.is_not(None))
+            .order_by(asc('create_date'))
+        )
+        return db_objs.scalars().all()
+
+
+
+
+
+    # async def get_closed_projects(
+    #         self,
+    #         from_reserve: datetime,
+    #         to_reserve: datetime,
+    #         session: AsyncSession,
+    # ) -> list[dict[str, int]]:
+    #     reservations = await session.execute(
+    #         # Получаем количество бронирований переговорок за период
+    #         select([Reservation.meetingroom_id,
+    #                 func.count(Reservation.meetingroom_id)]).where(
+    #             Reservation.from_reserve >= from_reserve,
+    #             Reservation.to_reserve <= to_reserve
+    #         ).group_by(Reservation.meetingroom_id)
+    #     )
+    #     reservations = reservations.all()
+    #     return reservations
