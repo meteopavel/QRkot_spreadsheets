@@ -6,7 +6,7 @@ from app.core.config import settings
 
 FORMATTED_DT_NOW = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
 HEADER_ROWS_COUNT = 3
-SHEET_COLUMN_COUNT = 3
+SHEET_COLUMNS_COUNT = 3
 
 
 async def spreadsheets_create(
@@ -25,7 +25,7 @@ async def spreadsheets_create(
                             'title': 'Лист1',
                             'gridProperties': {
                                 'rowCount': len(projects) + HEADER_ROWS_COUNT,
-                                'columnCount': SHEET_COLUMN_COUNT
+                                'columnCount': SHEET_COLUMNS_COUNT
                             }}}
         ]
     }
@@ -73,7 +73,7 @@ async def spreadsheets_update_value(
             spreadsheetId=spreadsheetid,
             range=f'R1C1:'
                   f'R{len(table_values)}'
-                  f'C{SHEET_COLUMN_COUNT}',
+                  f'C{SHEET_COLUMNS_COUNT}',
             valueInputOption='USER_ENTERED',
             json=update_body
         )
