@@ -60,29 +60,9 @@ uvicorn app.main:app
 
 ## Пример запроса API для расширенной версии
 ### /google/ — POST-запрос на формирование отчёта в Google-таблице;
-Пример запроса:
-```json
-{
-  "from_reserve": "2022-05-01T00:00",
-  "to_reserve": "2025-05-01T00:00",
-}
-```
 Ожидаемый ответ:
 ```json
-[
-  {
-    "meetingroom_id": 1,
-    "count": 1
-  },
-  {
-    "meetingroom_id": 2,
-    "count": 1
-  },
-  {
-    "meetingroom_id": 3,
-    "count": 1
-  }
-]
+"Отчёт доступен по адресу: https://docs.google.com/spreadsheets/d/pMzDHVlD8Qo/edit"
 ```
 Сформированная Google-таблица станет доступна на вашем личном аккаунте.
 
