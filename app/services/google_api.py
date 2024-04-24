@@ -73,7 +73,7 @@ async def spreadsheets_update_value(
             spreadsheetId=spreadsheetid,
             range=f'R1C1:'
                   f'R{len(table_values)}'
-                  f'C{max(map(len, table_values))}',
+                  f'C{SHEET_COLUMN_COUNT}',
             valueInputOption='USER_ENTERED',
             json=update_body
         )
