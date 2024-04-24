@@ -34,17 +34,17 @@ class CRUDCharityProject(
         """
         projects = await session.execute(
             select(
-                [
-                    CharityProject.name,
-                    (
-                        func.JULIANDAY(CharityProject.close_date) -
-                        func.JULIANDAY(CharityProject.create_date)
-                    ).label('comp_rate'),
-                    CharityProject.description,
-                ]
+                CharityProject.name,
+                (
+                    func.julianday(CharityProject.close_date) -
+                    func.julianday(CharityProject.create_date)
+                ).label('fund_raising_time'),
+                CharityProject.description
+            ).where(
+                CharityProject.fully_invested.is_(True)
+            ).order_by(
+                'fund_raising_time'
             )
-            .where(CharityProject.fully_invested.is_(True))
-            .order_by('comp_rate')
         )
         return projects.all()
 
