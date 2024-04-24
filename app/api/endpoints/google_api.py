@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from aiogoogle import Aiogoogle
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,22 +17,22 @@ router = APIRouter()
 
 @router.post(
     '/',
-    response_model=list[dict[str, int]],
     dependencies=[Depends(current_superuser)],
 )
 async def get_report(
-        from_reserve: datetime,
-        to_reserve: datetime,
-        session: AsyncSession = Depends(get_async_session),
-        wrapper_services: Aiogoogle = Depends(get_service)
+    session: AsyncSession = Depends(get_async_session),
+    wrapper_services: Aiogoogle = Depends(get_service),
 ):
-    """Только для суперюзеров."""
-    reservations = await charity_crud.get_closed_projects(
-        from_reserve, to_reserve, session
+    """
+    Составить отчёт по благотворительным проектам в Google-таблице.
+    Только для суперюзеров.
+    """
+    projects = await charity_crud.get_projects_by_completion_rate(session)
+    spreadsheet_id, spreadsheet_url = await spreadsheets_create(
+        wrapper_services, projects
     )
-    spreadsheetid = await spreadsheets_create(wrapper_services)
-    await set_user_permissions(spreadsheetid, wrapper_services)
-    await spreadsheets_update_value(spreadsheetid,
-                                    reservations,
-                                    wrapper_services)
-    return reservations
+    await set_user_permissions(spreadsheet_id, wrapper_services)
+    await spreadsheets_update_value(
+        spreadsheet_id, wrapper_services, projects
+    )
+    return f'Отчёт доступен по адресу: {spreadsheet_url}'

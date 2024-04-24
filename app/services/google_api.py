@@ -1,29 +1,38 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from aiogoogle import Aiogoogle
 
 from app.core.config import settings
 
-FORMAT = "%Y/%m/%d %H:%M:%S"
+FORMATTED_DT_NOW = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+HEADER_ROWS_COUNT = 3
+SHEET_COLUMN_COUNT = 3
 
 
-async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
-    now_date_time = datetime.now().strftime(FORMAT)
+async def spreadsheets_create(
+        wrapper_services: Aiogoogle,
+        projects: list
+) -> tuple[str, str]:
     service = await wrapper_services.discover('sheets', 'v4')
     spreadsheet_body = {
-        'properties': {'title': f'Отчёт на {now_date_time}',
-                       'locale': 'ru_RU'},
-        'sheets': [{'properties': {'sheetType': 'GRID',
-                                   'sheetId': 0,
-                                   'title': 'Лист1',
-                                   'gridProperties': {'rowCount': 100,
-                                                      'columnCount': 11}}}]
+        'properties': {
+            'title': f'Отчёт по проектам от {FORMATTED_DT_NOW}',
+            'locale': 'ru_RU'
+        },
+        'sheets': [
+            {'properties': {'sheetType': 'GRID',
+                            'sheetId': 0,
+                            'title': 'Лист1',
+                            'gridProperties': {
+                                'rowCount': len(projects) + HEADER_ROWS_COUNT,
+                                'columnCount': SHEET_COLUMN_COUNT
+                            }}}
+        ]
     }
     response = await wrapper_services.as_service_account(
         service.spreadsheets.create(json=spreadsheet_body)
     )
-    spreadsheetid = response['spreadsheetId']
-    return spreadsheetid
+    return response['spreadsheetId'], response['spreadsheetUrl']
 
 
 async def set_user_permissions(
@@ -44,19 +53,17 @@ async def set_user_permissions(
 
 async def spreadsheets_update_value(
         spreadsheetid: str,
-        reservations: list,
-        wrapper_services: Aiogoogle
+        wrapper_services: Aiogoogle,
+        projects: list
 ) -> None:
-    now_date_time = datetime.now().strftime(FORMAT)
     service = await wrapper_services.discover('sheets', 'v4')
     table_values = [
-        ['Отчёт от', now_date_time],
-        ['Количество регистраций переговорок'],
-        ['ID переговорки', 'Кол-во бронирований']
+        ['Отчёт от', FORMATTED_DT_NOW],
+        ['Топ проектов по скорости закрытия'],
+        ['Название проекта', 'Время сбора', 'Описание'],
+        *[(title, str(timedelta(days=rate)), description)
+          for title, rate, description in projects]
     ]
-    for res in reservations:
-        new_row = [str(res['meetingroom_id']), str(res['count'])]
-        table_values.append(new_row)
     update_body = {
         'majorDimension': 'ROWS',
         'values': table_values
@@ -64,7 +71,9 @@ async def spreadsheets_update_value(
     response = await wrapper_services.as_service_account(
         service.spreadsheets.values.update(
             spreadsheetId=spreadsheetid,
-            range='A1:E30',
+            range=f'R1C1:'
+                  f'R{len(table_values)}'
+                  f'C{max(map(len, table_values))}',
             valueInputOption='USER_ENTERED',
             json=update_body
         )
