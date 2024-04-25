@@ -35,4 +35,4 @@ async def get_report(
     await spreadsheets_update_value(
         spreadsheet_id, wrapper_services, projects
     )
-    return f'Отчёт доступен по адресу: {spreadsheet_url}'
+    return {'report_url': spreadsheet_url}

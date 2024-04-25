@@ -62,7 +62,9 @@ uvicorn app.main:app
 ### /google/ — POST-запрос на формирование отчёта в Google-таблице;
 Ожидаемый ответ:
 ```json
-"Отчёт доступен по адресу: https://docs.google.com/spreadsheets/d/pMzDHVlD8Qo/edit"
+{
+  "report_url": "string"
+}
 ```
 Сформированная Google-таблица станет доступна на вашем личном аккаунте.
 
