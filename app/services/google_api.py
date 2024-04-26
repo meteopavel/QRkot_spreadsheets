@@ -1,3 +1,4 @@
+import copy
 from datetime import datetime, timedelta
 
 from aiogoogle import Aiogoogle
@@ -34,13 +35,14 @@ async def spreadsheets_create(
         spreadsheet_body: dict = SPREADSHEET_BODY_TEMPLATE
 ) -> tuple[str, str]:
     service = await wrapper_services.discover('sheets', 'v4')
-    spreadsheet_body['properties']['title'] = (
+    spreadsheet_body_copy = copy.deepcopy(spreadsheet_body)
+    spreadsheet_body_copy['properties']['title'] = (
         f'Отчёт по проектам от {datetime.now().strftime(DT_FORMAT)}'
     )
-    grid_props = spreadsheet_body['sheets'][0]['properties']['gridProperties']
-    grid_props['columnCount'] += len(projects)
+    spreadsheet_props = spreadsheet_body_copy['sheets'][0]['properties']
+    spreadsheet_props['gridProperties']['columnCount'] += len(projects)
     response = await wrapper_services.as_service_account(
-        service.spreadsheets.create(json=spreadsheet_body)
+        service.spreadsheets.create(json=spreadsheet_body_copy)
     )
     return response['spreadsheetId'], response['spreadsheetUrl']
 
